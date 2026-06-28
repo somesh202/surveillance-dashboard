@@ -412,13 +412,13 @@ Open:
 http://localhost:5173
 ```
 
-Default signup/login can be any username/password with password length at least 6.
+Signup/login can be any username/password with password length at least 6.
 
-Example:
+The validation script uses this local test account:
 
 ```text
-username: demo
-password: demo1234
+username: operator
+password: operator2026
 ```
 
 ## 18. How to add sample camera
@@ -426,9 +426,9 @@ password: demo1234
 In the dashboard add:
 
 ```text
-Name: Sample Camera
+Name: Lobby Camera
 RTSP URL: rtsp://mediamtx:8554/sample
-Location: Demo Lab
+Location: Main Lobby
 ```
 
 Click **Start**.

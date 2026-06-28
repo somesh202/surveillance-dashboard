@@ -9,6 +9,10 @@
 .badge.live { background: #047857; }
 .badge.error { background: #b91c1c; }
 .badge.starting, .badge.connecting { background: #b45309; }
+.edit-form { display: grid; gap: .6rem; margin: .8rem 0; }
+.inline-check { display: flex; align-items: center; gap: .5rem; color: #cbd5e1; font-weight: 700; }
+.inline-check input { width: auto; }
+.edit-toggle { margin: .7rem 0 0; }
 
 @media (max-width: 900px) {
 	.camera-form { grid-template-columns: 1fr; }

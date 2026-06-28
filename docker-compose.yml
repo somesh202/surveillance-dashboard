@@ -89,8 +89,8 @@ services:
       context: ./apps/backend
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgres://surveillance:surveillance@postgres:5432/surveillance}
-      JWT_SECRET: ${JWT_SECRET:-dev-secret}
-      INTERNAL_WORKER_TOKEN: ${INTERNAL_WORKER_TOKEN:-dev-worker-token}
+      JWT_SECRET: ${JWT_SECRET:-local-surveillance-dashboard-jwt-2026}
+      INTERNAL_WORKER_TOKEN: ${INTERNAL_WORKER_TOKEN:-local-surveillance-worker-token-2026}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       MEDIAMTX_WEBRTC_URL: ${MEDIAMTX_WEBRTC_URL:-http://localhost:8889}
       PORT: 3000
@@ -109,7 +109,7 @@ services:
     environment:
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       API_URL: ${API_URL:-http://backend:3000}
-      INTERNAL_WORKER_TOKEN: ${INTERNAL_WORKER_TOKEN:-dev-worker-token}
+      INTERNAL_WORKER_TOKEN: ${INTERNAL_WORKER_TOKEN:-local-surveillance-worker-token-2026}
       MEDIAMTX_RTSP_URL: ${MEDIAMTX_RTSP_URL:-rtsp://mediamtx:8554}
       DETECTION_MODEL: ${DETECTION_MODEL:-yolov8n.pt}
       DETECTION_INTERVAL_SECONDS: ${DETECTION_INTERVAL_SECONDS:-2.5}

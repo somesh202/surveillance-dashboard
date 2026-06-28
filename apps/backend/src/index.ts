@@ -8,8 +8,8 @@ import Redis from "ioredis";
 import { z } from "zod";
 
 const DATABASE_URL = process.env.DATABASE_URL ?? "postgres://surveillance:surveillance@localhost:5432/surveillance";
-const JWT_SECRET = process.env.JWT_SECRET ?? "dev-secret";
-const INTERNAL_WORKER_TOKEN = process.env.INTERNAL_WORKER_TOKEN ?? "dev-worker-token";
+const JWT_SECRET = process.env.JWT_SECRET ?? "local-surveillance-dashboard-jwt-2026";
+const INTERNAL_WORKER_TOKEN = process.env.INTERNAL_WORKER_TOKEN ?? "local-surveillance-worker-token-2026";
 const REDIS_URL = process.env.REDIS_URL ?? "redis://localhost:6379";
 const MEDIAMTX_WEBRTC_URL = process.env.MEDIAMTX_WEBRTC_URL ?? "http://localhost:8889";
 const PORT = Number(process.env.PORT ?? 3000);

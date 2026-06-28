@@ -60,8 +60,8 @@ async function api<T>(path: string, options: RequestInit = {}, token?: string): 
 
 function AuthPage({ onAuth }: { onAuth: (auth: AuthState) => void }) {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
-  const [username, setUsername] = useState('demo');
-  const [password, setPassword] = useState('demo1234');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -98,9 +98,9 @@ function AuthPage({ onAuth }: { onAuth: (auth: AuthState) => void }) {
 }
 
 function CameraForm({ token, onCreated }: { token: string; onCreated: () => void }) {
-  const [name, setName] = useState('Sample Camera');
+  const [name, setName] = useState('Lobby Camera');
   const [rtspUrl, setRtspUrl] = useState('rtsp://mediamtx:8554/sample');
-  const [location, setLocation] = useState('Demo Lab');
+  const [location, setLocation] = useState('Main Lobby');
   const [error, setError] = useState('');
 
   async function submit(event: React.FormEvent) {
@@ -234,6 +234,19 @@ function CameraVideo({ camera }: { camera: CameraRow }) {
 
 function CameraTile({ camera, alerts, token, onRefresh }: { camera: CameraRow; alerts: AlertRow[]; token: string; onRefresh: () => void }) {
   const [busy, setBusy] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editName, setEditName] = useState(camera.name);
+  const [editRtspUrl, setEditRtspUrl] = useState(camera.rtspUrl);
+  const [editLocation, setEditLocation] = useState(camera.location);
+  const [editEnabled, setEditEnabled] = useState(camera.enabled);
+
+  useEffect(() => {
+    setEditName(camera.name);
+    setEditRtspUrl(camera.rtspUrl);
+    setEditLocation(camera.location);
+    setEditEnabled(camera.enabled);
+  }, [camera.id, camera.name, camera.rtspUrl, camera.location, camera.enabled]);
+
   async function action(kind: 'start' | 'stop') {
     setBusy(true);
     try {
@@ -248,6 +261,17 @@ function CameraTile({ camera, alerts, token, onRefresh }: { camera: CameraRow; a
     await api(`/cameras/${camera.id}`, { method: 'DELETE' }, token);
     onRefresh();
   }
+  async function saveEdit(event: React.FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    try {
+      await api(`/cameras/${camera.id}`, { method: 'PATCH', body: JSON.stringify({ name: editName, rtspUrl: editRtspUrl, location: editLocation, enabled: editEnabled }) }, token);
+      setEditing(false);
+      onRefresh();
+    } finally {
+      setBusy(false);
+    }
+  }
   const running = ['starting', 'connecting', 'live'].includes(camera.state);
   const canShowVideo = camera.state === 'live';
   return <article className="tile">
@@ -257,6 +281,13 @@ function CameraTile({ camera, alerts, token, onRefresh }: { camera: CameraRow; a
     </div>
     <div className="tile-body">
       <div className="tile-title"><div><h3>{camera.name}</h3><p>{camera.location || 'No location'}</p></div><button className="icon-btn" onClick={remove}><Trash2 size={16} /></button></div>
+      {editing ? <form className="edit-form" onSubmit={saveEdit}>
+        <input placeholder="Camera name" value={editName} onChange={(e) => setEditName(e.target.value)} />
+        <input placeholder="RTSP URL" value={editRtspUrl} onChange={(e) => setEditRtspUrl(e.target.value)} />
+        <input placeholder="Location" value={editLocation} onChange={(e) => setEditLocation(e.target.value)} />
+        <label className="inline-check"><input type="checkbox" checked={editEnabled} onChange={(e) => setEditEnabled(e.target.checked)} /> Enabled</label>
+        <div className="actions"><button disabled={busy}>Save</button><button type="button" className="secondary" onClick={() => setEditing(false)}>Cancel</button></div>
+      </form> : <button className="secondary edit-toggle" onClick={() => setEditing(true)}>Edit camera</button>}
       {camera.stateMessage && <p className="state-message">{camera.stateMessage}</p>}
       <div className="stats"><span>FPS <b>{camera.fps.toFixed(1)}</b></span><span>Detections/min <b>{camera.detectionsPerMinute}</b></span></div>
       <div className="actions">

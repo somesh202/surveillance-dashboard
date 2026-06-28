@@ -79,7 +79,8 @@ Edit `.env` on the VM:
 PUBLIC_API_URL=http://<PUBLIC_IP>:3001
 MEDIAMTX_WEBRTC_URL=http://<PUBLIC_IP>:8889
 MEDIAMTX_HLS_URL=http://<PUBLIC_IP>:8888
-JWT_SECRET=<long-random-secret>
+JWT_SECRET=run-openssl-rand-hex-32-and-paste-the-output
+INTERNAL_WORKER_TOKEN=run-openssl-rand-hex-32-and-paste-the-output
 ```
 
 Then rebuild frontend/backend:

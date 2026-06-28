@@ -51,23 +51,21 @@ Open:
 http://localhost:5173
 ```
 
-Create an account or use:
+Create an account from the signup screen. The validation script uses this local test account:
 
 ```text
-username: demo
-password: demo1234
+username: operator
+password: operator2026
 ```
-
-If the demo user does not exist yet, switch to signup once and create it.
 
 ## Add the sample camera
 
 Use the prefilled form in the dashboard, or enter:
 
 ```text
-Name: Sample Camera
+Name: Lobby Camera
 RTSP URL: rtsp://mediamtx:8554/sample
-Location: Demo Lab
+Location: Main Lobby
 ```
 
 Press **Start**. The backend sends a `camera.start` command to Redis. The worker relays the RTSP stream into a per-camera MediaMTX path and starts detection. The dashboard plays the stream with WebRTC/WHEP first and falls back to HLS only if WebRTC cannot start in the local browser.
@@ -162,7 +160,7 @@ Manual API checks:
 ```bash
 TOKEN=$(curl -s http://localhost:3001/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"demo","password":"demo1234"}' \
+  -d '{"username":"operator","password":"operator2026"}' \
   | python3 -c 'import json,sys; print(json.load(sys.stdin)["token"])')
 
 curl -s http://localhost:3001/cameras \

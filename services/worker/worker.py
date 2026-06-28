@@ -26,13 +26,13 @@ except ImportError:  # model import is optional until the container is fully ins
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
 API_URL = os.getenv("API_URL", "http://localhost:3000")
-INTERNAL_WORKER_TOKEN = os.getenv("INTERNAL_WORKER_TOKEN", "dev-worker-token")
+INTERNAL_WORKER_TOKEN = os.getenv("INTERNAL_WORKER_TOKEN", "local-surveillance-worker-token-2026")
 MEDIAMTX_RTSP_URL = os.getenv("MEDIAMTX_RTSP_URL", "rtsp://localhost:8554")
 DETECTION_MODEL = os.getenv("DETECTION_MODEL", "yolov8n.pt")
 DETECTION_INTERVAL_SECONDS = float(os.getenv("DETECTION_INTERVAL_SECONDS", "1.5"))
 ALERT_COOLDOWN_SECONDS = float(os.getenv("ALERT_COOLDOWN_SECONDS", "10"))
-SIMULATE_ON_FAILURE = os.getenv("SIMULATE_DETECTION_ON_FAILURE", "true").lower() == "true"
-DEMO_ALERTS_WHEN_NO_PERSON = os.getenv("DEMO_ALERTS_WHEN_NO_PERSON", "true").lower() == "true"
+SIMULATE_ON_FAILURE = os.getenv("SIMULATE_DETECTION_ON_FAILURE", "false").lower() == "true"
+DEMO_ALERTS_WHEN_NO_PERSON = os.getenv("DEMO_ALERTS_WHEN_NO_PERSON", "false").lower() == "true"
 RELAY_READY_DELAY_SECONDS = float(os.getenv("RELAY_READY_DELAY_SECONDS", "6"))
 WORKER_ID = f"worker-{uuid.uuid4().hex[:8]}"
 
