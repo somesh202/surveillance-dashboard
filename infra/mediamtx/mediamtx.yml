@@ -1,0 +1,17 @@
+logLevel: info
+rtsp: yes
+rtspAddress: :8554
+webrtc: yes
+webrtcAddress: :8889
+webrtcEncryption: no
+webrtcAllowOrigin: '*'
+webrtcLocalUDPAddress: :8189
+hls: yes
+hlsAddress: :8888
+hlsAllowOrigin: '*'
+hlsVariant: mpegts
+hlsSegmentCount: 5
+hlsSegmentDuration: 2s
+paths:
+  all:
+    source: publisher

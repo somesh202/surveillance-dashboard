@@ -1,0 +1,57 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.secret
+secrets/
+
+# Dependencies
+node_modules/
+.venv/
+venv/
+env/
+
+# Build and test output
+dist/
+build/
+coverage/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+
+# Runtime data and local databases
+postgres-data/
+redis-data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs and process files
+*.log
+logs/
+*.pid
+
+# ML model weights and generated demo media
+*.pt
+*.onnx
+*.engine
+demo/*
+!demo/.gitkeep
+
+# Local profiler/cache output
+.lprof/
+.cache/
+.tmp/
+tmp/
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
+.vscode/settings.json
+.vscode/launch.json
+.idea/

@@ -1,0 +1,1 @@
+{"name":"surveillance-dashboard","private":true,"scripts":{"dev":"docker compose up --build","down":"docker compose down","logs":"docker compose logs -f","test":"bun test --cwd apps/backend"},"workspaces":["apps/backend","apps/frontend"]}

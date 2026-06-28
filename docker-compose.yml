@@ -1,0 +1,141 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-surveillance}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-surveillance}
+      POSTGRES_DB: ${POSTGRES_DB:-surveillance}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-surveillance} -d ${POSTGRES_DB:-surveillance}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mediamtx:
+    image: bluenviron/mediamtx:latest
+    ports:
+      - "8554:8554"
+      - "8888:8888"
+      - "8889:8889"
+      - "8189:8189/udp"
+    volumes:
+      - ./infra/mediamtx/mediamtx.yml:/mediamtx.yml:ro
+
+  sample-camera:
+    image: jrottenberg/ffmpeg:6.1-alpine
+    depends_on:
+      - mediamtx
+    command: >
+      -re -stream_loop -1 -f lavfi -i testsrc=size=1280x720:rate=25
+      -f lavfi -i sine=frequency=1000:sample_rate=44100
+      -shortest -c:v libx264 -pix_fmt yuv420p -preset ultrafast -tune zerolatency
+      -c:a aac -rtsp_transport tcp -f rtsp rtsp://mediamtx:8554/sample
+    restart: unless-stopped
+
+  person-video-camera:
+    image: jrottenberg/ffmpeg:6.1-alpine
+    profiles: ["person-demo"]
+    depends_on:
+      - mediamtx
+    volumes:
+      - ./demo:/media:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      'if [ ! -f /media/person.mp4 ]; then
+        echo "Missing demo/person.mp4. Add a video containing a visible person, then run: docker compose --profile person-demo up -d person-video-camera";
+        exit 1;
+      fi;
+      ffmpeg -re -stream_loop -1 -i /media/person.mp4
+      -an -c:v libx264 -pix_fmt yuv420p -preset ultrafast -tune zerolatency
+      -rtsp_transport tcp -f rtsp rtsp://mediamtx:8554/person-demo'
+    restart: unless-stopped
+
+  person-image-camera:
+    image: jrottenberg/ffmpeg:6.1-alpine
+    profiles: ["person-image-demo"]
+    depends_on:
+      - mediamtx
+    volumes:
+      - ./demo:/media:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      'if [ ! -f /media/person.jpg ]; then
+        echo "Missing demo/person.jpg. Add an image containing a visible person, then run: docker compose --profile person-image-demo up -d person-image-camera";
+        exit 1;
+      fi;
+      ffmpeg -re -loop 1 -framerate 25 -i /media/person.jpg
+      -an -vf scale=1280:-2,format=yuv420p -r 25 -c:v libx264 -g 50
+      -pix_fmt yuv420p -preset ultrafast -tune zerolatency
+      -rtsp_transport tcp -f rtsp rtsp://mediamtx:8554/person-demo'
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./apps/backend
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgres://surveillance:surveillance@postgres:5432/surveillance}
+      JWT_SECRET: ${JWT_SECRET:-dev-secret}
+      INTERNAL_WORKER_TOKEN: ${INTERNAL_WORKER_TOKEN:-dev-worker-token}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      MEDIAMTX_WEBRTC_URL: ${MEDIAMTX_WEBRTC_URL:-http://localhost:8889}
+      PORT: 3000
+    ports:
+      - "3001:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ./services/worker
+    environment:
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      API_URL: ${API_URL:-http://backend:3000}
+      INTERNAL_WORKER_TOKEN: ${INTERNAL_WORKER_TOKEN:-dev-worker-token}
+      MEDIAMTX_RTSP_URL: ${MEDIAMTX_RTSP_URL:-rtsp://mediamtx:8554}
+      DETECTION_MODEL: ${DETECTION_MODEL:-yolov8n.pt}
+      DETECTION_INTERVAL_SECONDS: ${DETECTION_INTERVAL_SECONDS:-2.5}
+      ALERT_COOLDOWN_SECONDS: ${ALERT_COOLDOWN_SECONDS:-10}
+      SIMULATE_DETECTION_ON_FAILURE: ${SIMULATE_DETECTION_ON_FAILURE:-false}
+      DEMO_ALERTS_WHEN_NO_PERSON: ${DEMO_ALERTS_WHEN_NO_PERSON:-false}
+      RELAY_READY_DELAY_SECONDS: ${RELAY_READY_DELAY_SECONDS:-6}
+    depends_on:
+      - backend
+      - redis
+      - mediamtx
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./apps/frontend
+      args:
+        VITE_API_BASE_URL: ${PUBLIC_API_URL:-http://localhost:3001}
+        VITE_MEDIAMTX_WEBRTC_URL: ${MEDIAMTX_WEBRTC_URL:-http://localhost:8889}
+        VITE_MEDIAMTX_HLS_URL: ${MEDIAMTX_HLS_URL:-http://localhost:8888}
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  redis-data:
